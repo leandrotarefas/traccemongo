@@ -1,14 +1,12 @@
 
 const log = require("traccelog");
 const uuidv1 = require('uuid/v1');
-const SOENV = require('soenv');
-const env = new SOENV();
 
 
 const mongoose = require("mongoose");
 
 
-const options = {
+var options = {
     useNewUrlParser: true,
     reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
     reconnectInterval: 500, // Reconnect every 500ms
@@ -18,6 +16,8 @@ const options = {
     family: 4 // Use IPv4, skip trying IPv6
   };
 
+  var app_log_path = "./logs"; 
+
   function exit(){
     console.log("#Micro service Consulta Cadastral NOT started!");     
     process.exit();   
@@ -26,9 +26,7 @@ const options = {
 function successCallback(result) {  
     
         mongoose.set('bufferCommands', false);
-
-        const app_log_path = env.getLogPath(); 
-
+        
         mongoose.connection.on('open', function (ref) {  
             log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{msg:"#Service open connection to mongo server." }});        
         });
@@ -61,10 +59,20 @@ function successCallback(result) {
         exit();       
     } 
 
-    module.exports = {
-        createConnection: function(database){
+    module.exports = function (app_log_path_){
+        
+        app_log_path = app_log_path_
+
+        var connection = {}
+        connection.createConnection = function(database, options_){
+
+            if(options_)
+                options = options_;
+
             const promise =  mongoose.connect(database, options);
             promise.then(successCallback, failureCallback);
         }
+
+        return connection;
     }
 
