@@ -1,0 +1,24 @@
+{
+  "name": "traccemongo",
+  "version": "1.0.1",
+  "description": "Event Log Listeners for MongoDB",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leandrotarefas/traccemongo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leandrotarefas/traccemongo/issues"
+  },
+  "homepage": "https://github.com/leandrotarefas/traccemongo#readme",
+  "dependencies": {
+    "mongoose": "^5.5.2",
+    "traccelog": "^1.0.6",
+    "uuid": "^3.3.2"
+  }
+}
