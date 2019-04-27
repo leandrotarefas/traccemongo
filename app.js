@@ -5,42 +5,35 @@ const uuidv1 = require('uuid/v1');
 
 const mongoose = require("mongoose");
 
-
-var options = {
-    useNewUrlParser: true,
-    reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
-    reconnectInterval: 500, // Reconnect every 500ms
-    bufferMaxEntries: 0,
-    connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    family: 4 // Use IPv4, skip trying IPv6
+  var options = {
+    useNewUrlParser: true
   };
 
   var app_log_path = "./logs"; 
-
+  
   function exit(){
-    console.log("#Micro service Consulta Cadastral NOT started!");     
+    console.log("#Micro service NOT started!");     
     process.exit();   
 }
 
-function successCallback(result) {  
+function successCallback(result) {     
     
         mongoose.set('bufferCommands', false);
         
         mongoose.connection.on('open', function (ref) {  
-            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{msg:"#Service open connection to mongo server." }});        
+            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{msg:"#Service OPEN connection to mongo server." }});        
         });
     
         mongoose.connection.on('connected', function (ref) {  
-            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{msg:"#Service connected to mongo server." }});        
+            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{msg:"#Service CONNECTED to mongo server." }});        
         });
     
         mongoose.connection.on('disconnected', function (ref) {    
-            log.logPathError(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service disconnected from mongo server." }});        
+            log.logPathError(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service DISCONNECTED from mongo server." }});        
         });
     
         mongoose.connection.on('close', function (ref) {
-            log.logPathError(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service close connection to mongo server." }}); 
+            log.logPathError(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service CLOSE connection to mongo server." }}); 
         });
     
         mongoose.connection.on('error', function (err) {
@@ -48,21 +41,21 @@ function successCallback(result) {
         });
     
         mongoose.connection.db.on('reconnect', function (ref) {
-            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service reconnect to mongo server." }}); 
-        });            
-    
+            log.logPathWrite(app_log_path, uuidv1(), {consultaCadastral:{error:"#Service RECONNECTED to mongo server." }}); 
+        }); 
+                
 }
 
     function failureCallback(error_) {
         console.log("MongoDb isn't Connected!");              
-        log.logError(1, {consultaCadastral:{error: error_, description:"MongoDB is not connected! "} });                  
+        log.logError(1, {consultaCadastral:{error: error_, description:"MongoDB is NOT connected! "} });                  
         exit();       
     } 
 
     module.exports = function (app_log_path_){
         
-        app_log_path = app_log_path_
-
+        app_log_path = app_log_path_;
+   
         var connection = {}
         connection.createConnection = function(database, options_){
 
@@ -72,6 +65,24 @@ function successCallback(result) {
             const promise =  mongoose.connect(database, options);
             promise.then(successCallback, failureCallback);
         }
+
+        connection.isConnected = function(){
+            //0 = disconnected
+            //1 = connected
+            let connectionState = 0;
+
+            if(mongoose)
+               if(mongoose.connection)
+                  if(mongoose.connection.readyState)
+                      connectionState = mongoose.connection.readyState;
+
+            return (connectionState == 1);
+        }
+
+        connection.getMongoose = function(){
+            return mongoose;            
+        }
+     
 
         return connection;
     }
